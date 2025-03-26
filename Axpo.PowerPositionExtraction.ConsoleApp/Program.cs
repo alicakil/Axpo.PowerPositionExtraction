@@ -1,5 +1,4 @@
-﻿using Axpo;
-using Axpo.PowerPositionExtraction.ConsoleApp.Config;
+﻿using Axpo.PowerPositionExtraction.ConsoleApp.Config;
 using Axpo.PowerPositionExtraction.ConsoleApp.Jobs;
 using Axpo.PowerPositionExtraction.ConsoleApp.Services;
 using Hangfire;

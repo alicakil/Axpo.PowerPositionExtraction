@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Axpo.PowerPositionExtraction.ConsoleApp.Models;
 using Axpo.PowerPositionExtraction.ConsoleApp.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
-namespace Axpo.PowerPositionExtraction.Tests
+namespace Axpo.PowerPositionExtraction.ConsoleApp.UnitTests.Services
 {
     public class CsvGeneratorTests
     {
@@ -22,9 +17,9 @@ namespace Axpo.PowerPositionExtraction.Tests
 
             var positions = new List<HourlyPosition>
             {
-                new HourlyPosition { LocalTime = 0, Volume = 100 },
-                new HourlyPosition { LocalTime = 1, Volume = 150.5 },
-                new HourlyPosition { LocalTime = 23, Volume = 200 }
+                new() { LocalTime = 0, Volume = 100 },
+                new() { LocalTime = 1, Volume = 150.5 },
+                new() { LocalTime = 23, Volume = 200 }
             };
 
             var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

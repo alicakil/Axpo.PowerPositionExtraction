@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <Reference Include="PowerService">
-      <HintPath>..\..\testt\netstandard2.0\PowerService.dll</HintPath>
+      <HintPath>..\lib\PowerService.dll</HintPath>
     </Reference>
   </ItemGroup>
 
