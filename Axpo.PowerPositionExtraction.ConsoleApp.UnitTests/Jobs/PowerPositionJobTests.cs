@@ -1,17 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Axpo;
-using Axpo.PowerPositionExtraction.ConsoleApp.Config;
 using Axpo.PowerPositionExtraction.ConsoleApp.Jobs;
 using Axpo.PowerPositionExtraction.ConsoleApp.Models;
 using Axpo.PowerPositionExtraction.ConsoleApp.Services;
-using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace Axpo.PowerPositionExtraction.Tests
 {

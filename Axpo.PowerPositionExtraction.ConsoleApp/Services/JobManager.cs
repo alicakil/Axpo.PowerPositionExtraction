@@ -4,50 +4,38 @@ using Hangfire;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Axpo.PowerPositionExtraction.ConsoleApp.Services
+namespace Axpo.PowerPositionExtraction.ConsoleApp.Services;
+
+public class JobManager(
+    ILogger<JobManager> logger,
+    IConfiguration configuration,
+    IRecurringJobManager recurringJobManager,
+    PowerPositionJob powerPositionJob
+        ) : IJobManager
 {
-    public class JobManager : IJobManager
+    private readonly AppSettings _settings = configuration.GetSection("AppSettings").Get<AppSettings>();
+
+    public async Task InitializeAsync()
     {
-        private readonly ILogger<JobManager> _logger;
-        private readonly AppSettings _settings;
-        private readonly IRecurringJobManager _recurringJobManager;
-        private readonly PowerPositionJob _powerPositionJob;
+        logger.LogInformation("Initializing job manager");
 
-        public JobManager(
-            ILogger<JobManager> logger,
-            IConfiguration configuration,
-            IRecurringJobManager recurringJobManager,
-            PowerPositionJob powerPositionJob
-            )
-        {
-            _logger = logger;
-            _settings = configuration.GetSection("AppSettings").Get<AppSettings>();
-            _recurringJobManager = recurringJobManager;
-            _powerPositionJob = powerPositionJob;
-        }
+        // Run job immediately on startup
+        await powerPositionJob.ExecuteAsync();
 
-        public async Task InitializeAsync()
-        {
-            _logger.LogInformation("Initializing job manager");
+        // Schedule recurring job
+        await ScheduleJobsAsync();
+    }
 
-            // Run job immediately on startup
-            await _powerPositionJob.ExecuteAsync();
+    public Task ScheduleJobsAsync()
+    {
+        logger.LogInformation("Scheduling jobs with interval: {IntervalMinutes} minutes", _settings.ExtractIntervalMinutes);
 
-            // Schedule recurring job
-            await ScheduleJobsAsync();
-        }
+        // Schedule recurring job
+        recurringJobManager.AddOrUpdate<PowerPositionJob>(
+            "generate-power-position-report",
+            job => job.ExecuteAsync(),
+            $"*/{_settings.ExtractIntervalMinutes} * * * *"); // I may need to improve this line. might not work for some cases.
 
-        public Task ScheduleJobsAsync()
-        {
-            _logger.LogInformation("Scheduling jobs with interval: {IntervalMinutes} minutes", _settings.ExtractIntervalMinutes);
-
-            // Schedule recurring job
-            _recurringJobManager.AddOrUpdate<PowerPositionJob>(
-                "generate-power-position-report",
-                job => job.ExecuteAsync(),
-                $"*/{_settings.ExtractIntervalMinutes} * * * *"); // I may need to improve this line. might not work for some cases.
-
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
     }
 }

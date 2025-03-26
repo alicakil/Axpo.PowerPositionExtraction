@@ -1,8 +1,7 @@
-﻿namespace Axpo.PowerPositionExtraction.ConsoleApp.Config
+﻿namespace Axpo.PowerPositionExtraction.ConsoleApp.Config;
+
+public class AppSettings
 {
-    public class AppSettings
-    {
-        public string OutputPath { get; set; }
-        public int ExtractIntervalMinutes { get; set; } = 60;
-    }
+    public string OutputPath { get; set; }
+    public int ExtractIntervalMinutes { get; set; } = 60;
 }

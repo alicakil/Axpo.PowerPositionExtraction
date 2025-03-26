@@ -1,8 +1,7 @@
-﻿namespace Axpo.PowerPositionExtraction.ConsoleApp.Services
+﻿namespace Axpo.PowerPositionExtraction.ConsoleApp.Services;
+
+public interface IJobManager
 {
-    public interface IJobManager
-    {
-        Task InitializeAsync();
-        Task ScheduleJobsAsync();
-    }
+    Task InitializeAsync();
+    Task ScheduleJobsAsync();
 }
