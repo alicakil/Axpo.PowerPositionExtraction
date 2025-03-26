@@ -1,6 +1,7 @@
 # Power Position Reporter
 
 This application generates intra-day reports of power positions for power traders. It aggregates trade volumes per hour and outputs the results to a CSV file based on a configurable schedule.
+It is prepared based on the requirements described here: https://bitbucket.org/axso-tim/axso_etrm_coding_challenge/src/main/
 
 ## Features
 
