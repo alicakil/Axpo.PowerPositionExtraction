@@ -9,57 +9,53 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-// Init SQLite dependencies
+// Initialize SQLite dependencies
 SQLitePCL.Batteries_V2.Init();
 
-var host = CreateHostBuilder(args).Build();
+var builder = Host.CreateApplicationBuilder(args);
 
-// Initialize Hangfire
-using (var scope = host.Services.CreateScope())
+// Configuration
+builder.Configuration.Sources.Clear();
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddCommandLine(args);
+
+// Configure services
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+
+// Hangfire SQLite Configuration
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSQLiteStorage(builder.Configuration.GetConnectionString("HangfireConnection")));
+builder.Services.AddHangfireServer();
+
+// Register services
+builder.Services.AddSingleton<IPowerService, PowerService>();
+builder.Services.AddSingleton<ICsvGenerator, CsvGenerator>();
+builder.Services.AddSingleton<IJobManager, JobManager>();
+builder.Services.AddTransient<PowerPositionJob>();
+
+// Build and run the host
+using var host = builder.Build();
+
+// Initialize jobs
+try
 {
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
+    using var scope = host.Services.CreateScope();
+    var jobManager = scope.ServiceProvider.GetRequiredService<IJobManager>();
+    await jobManager.InitializeAsync();
 
-    try
-    {
-        var jobManager = services.GetRequiredService<IJobManager>();
-        await jobManager.InitializeAsync();
-
-        logger.LogInformation("Application started successfully");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "An error occurred during application startup");
-    }
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("Application started successfully");
+}
+catch (Exception ex)
+{
+    var loggerFactory = host.Services.GetRequiredService<ILoggerFactory>();
+    var logger = loggerFactory.CreateLogger<Program>();
+    logger.LogError(ex, "An error occurred during application startup");
 }
 
 await host.RunAsync();
-
-
-// Helper method to create the host builder (kept as a method for clarity)
-static IHostBuilder CreateHostBuilder(string[] args) =>
-    Host.CreateDefaultBuilder(args)
-        .ConfigureAppConfiguration((hostContext, config) =>
-        {
-            config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-            config.AddCommandLine(args);
-        })
-        .ConfigureServices((hostContext, services) =>
-        {
-            services.Configure<AppSettings>(hostContext.Configuration.GetSection("AppSettings"));
-
-            // Hangfire SQLite Configuration
-            services.AddHangfire(configuration => configuration
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UseSQLiteStorage(hostContext.Configuration.GetConnectionString("HangfireConnection")));
-
-            services.AddHangfireServer();
-
-            // Register services
-            services.AddSingleton<IPowerService, PowerService>();
-            services.AddSingleton<ICsvGenerator, CsvGenerator>();
-            services.AddSingleton<IJobManager, JobManager>();
-            services.AddTransient<PowerPositionJob>();
-        });
